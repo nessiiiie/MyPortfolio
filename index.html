@@ -152,13 +152,13 @@
     </div>
 
     <script>
-        let comments = [];
+         let comments = [];
 
-        async function loadComments() {
+        function loadComments() {
             try {
-                const result = await window.storage.get('portfolio-comments', true);
-                if (result) {
-                    comments = JSON.parse(result.value);
+                const stored = localStorage.getItem('portfolio-comments');
+                if (stored) {
+                    comments = JSON.parse(stored);
                 }
             } catch (error) {
                 comments = [];
@@ -232,4 +232,5 @@
         loadComments();
     </script>
 </body>
+
 </html>
