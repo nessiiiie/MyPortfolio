@@ -152,85 +152,48 @@
     </div>
 
     <script>
-         let comments = [];
+       let comments = [];
 
-        function loadComments() {
-            try {
-                const stored = localStorage.getItem('portfolio-comments');
-                if (stored) {
-                    comments = JSON.parse(stored);
-                }
-            } catch (error) {
-                comments = [];
-            }
-            renderComments();
+function loadComments() {
+    try {
+        const result = localStorage.getItem('portfolio-comments');
+        if (result) {
+            comments = JSON.parse(result);
         }
+    } catch (error) {
+        comments = [];
+    }
+    renderComments();
+}
 
-        async function postComment() {
-            const input = document.getElementById('commentInput');
-            const text = input.value.trim();
-            
-            if (!text) return;
+function postComment() {
+    const input = document.getElementById('commentInput');
+    const text = input.value.trim();
 
-            const comment = {
-                id: Date.now(),
-                text: text,
-                timestamp: new Date().toISOString()
-            };
+    if (!text) return;
 
-            comments.unshift(comment);
-            
-            try {
-                await window.storage.set('portfolio-comments', JSON.stringify(comments), true);
-                input.value = '';
-                renderComments();
-            } catch (error) {
-                console.error('Failed to save comment:', error);
-            }
-        }
+    const comment = {
+        id: Date.now(),
+        text: text,
+        timestamp: new Date().toISOString()
+    };
 
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
+    comments.unshift(comment);
 
-            if (minutes < 1) return 'just now';
-            if (minutes < 60) return `${minutes}m ago`;
-            if (hours < 24) return `${hours}h ago`;
-            return `${days}d ago`;
-        }
+    try {
+        localStorage.setItem(
+            'portfolio-comments',
+            JSON.stringify(comments)
+        );
+        input.value = '';
+        renderComments();
+    } catch (error) {
+        console.error('Failed to save comment:', error);
+    }
+}
 
-        function renderComments() {
-            const container = document.getElementById('commentsContainer');
-            
-            if (comments.length === 0) {
-                container.innerHTML = '<div class="loading">No comments yet. Be the first to share your thoughts!</div>';
-                return;
-            }
-
-            container.innerHTML = comments.map(comment => `
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <span><strong>Anonymous</strong></span>
-                        <span>${formatTime(comment.timestamp)}</span>
-                    </div>
-                    <div class="comment-text">${escapeHtml(comment.text)}</div>
-                </div>
-            `).join('');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Load comments on page load
-        loadComments();
     </script>
 </body>
 
 </html>
+
