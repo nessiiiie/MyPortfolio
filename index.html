@@ -130,17 +130,18 @@
                     </div>
                 </div>
 
-                <!-- Comments Section -->
-                <div class="card comments-section" style="margin-top: 20px;">
-                    <div class="card-header">Comments</div>
-                    
-                    <div class="comment-form">
-                        <textarea id="commentInput" placeholder="Share your thoughts anonymously..."></textarea>
-                        <button onclick="postComment()" style="margin-top: 10px;">Post Comment</button>
-                    </div>
+               <section id="comments-section">
+    <div class="comments-title">COMMENTS</div>
 
-                    <div id="commentsContainer">
-                        <div class="loading">Loading comments...</div>
+    <textarea
+        id="commentInput"
+        placeholder="Share your thoughts anonymously..."
+    ></textarea>
+
+    <button id="postCommentBtn">Post Comment</button>
+
+    <div id="commentsContainer">Loading comments...</div>
+</section>
                     </div>
                 </div>
             </main>
@@ -152,48 +153,79 @@
     </div>
 
     <script>
-       let comments = [];
+(() => {
+    const STORAGE_KEY = 'portfolio-comments';
+    let comments = [];
 
-function loadComments() {
-    try {
-        const result = localStorage.getItem('portfolio-comments');
-        if (result) {
-            comments = JSON.parse(result);
-        }
-    } catch (error) {
-        comments = [];
-    }
-    renderComments();
-}
-
-function postComment() {
     const input = document.getElementById('commentInput');
-    const text = input.value.trim();
+    const button = document.getElementById('postCommentBtn');
+    const container = document.getElementById('commentsContainer');
 
-    if (!text) return;
+    function loadComments() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        comments = saved ? JSON.parse(saved) : [];
+        renderComments();
+    }
 
-    const comment = {
-        id: Date.now(),
-        text: text,
-        timestamp: new Date().toISOString()
-    };
+    function saveComments() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+    }
 
-    comments.unshift(comment);
+    function postComment() {
+        const text = input.value.trim();
+        if (!text) return;
 
-    try {
-        localStorage.setItem(
-            'portfolio-comments',
-            JSON.stringify(comments)
-        );
+        comments.unshift({
+            id: Date.now(),
+            text,
+            timestamp: new Date().toISOString()
+        });
+
+        saveComments();
         input.value = '';
         renderComments();
-    } catch (error) {
-        console.error('Failed to save comment:', error);
     }
-}
 
-    </script>
+    function formatTime(iso) {
+        const diff = Date.now() - new Date(iso);
+        const m = Math.floor(diff / 60000);
+        const h = Math.floor(diff / 3600000);
+        const d = Math.floor(diff / 86400000);
+        if (m < 1) return 'just now';
+        if (m < 60) return `${m}m ago`;
+        if (h < 24) return `${h}h ago`;
+        return `${d}d ago`;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function renderComments() {
+        if (!comments.length) {
+            container.innerHTML = 'No comments yet.';
+            return;
+        }
+
+        container.innerHTML = comments.map(c => `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <span class="comment-author">Anonymous</span>
+                    <span class="comment-time">${formatTime(c.timestamp)}</span>
+                </div>
+                <div class="comment-text">${escapeHtml(c.text)}</div>
+            </div>
+        `).join('');
+    }
+
+    button.addEventListener('click', postComment);
+    loadComments();
+})();
+</script>
 </body>
 
 </html>
+
 
